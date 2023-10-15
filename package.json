@@ -1,0 +1,8 @@
+{
+  "name": "map",
+  "description": "map exercise",
+  "type": "module",
+  "scripts": {
+    "run": "nodejs server.js"
+  }
+}
