@@ -19,7 +19,7 @@ window.onload = () => {
 	const map = initMap()
 	const campaingsContent = document.getElementById('campaigns-content')
 	map.whenReady(() => {
-		initCampaigns(campaingsContent, map, campaings)
+		initCampaignsSection(campaingsContent, map, campaings)
 	})
 	const mapperContnent = document.getElementById('mapper-content')
 }
@@ -41,16 +41,16 @@ function initMap() {
 	return map
 }
 
-function initCampaigns(element, map, campaingsData) {
+function initCampaignsSection(element, map, campaingsData) {
 	const campaignsBox = document.createElement("ul")
 
-	const campaignLayers = []
+	const campaignLayers = L.layerGroup().addTo(map)
 	for (const campaign of campaingsData) {
-		const campaignLayer = L.layerGroup().addTo(map)
-		campaignLayers.push(campaignLayer)
+		const campaignLayer = L.layerGroup().addTo(campaignLayers)
 		campaignsBox.appendChild(campaignContainer(campaign, campaignLayer, campaignLayers, map))
 	}
 
+	element.appendChild(showAllCampaignsButton(campaignLayers, map))
 	element.appendChild(campaignsBox)
 
 	return campaignLayers
@@ -104,13 +104,24 @@ function showCampaignButton(allGroups, map, layerGroup) {
 
 	campaignVisualizeButton.innerText = "show campaign in map"
 	campaignVisualizeButton.onclick = () => {
-		for (let group of allGroups) {
+		allGroups.eachLayer( group=>{
 			group.eachLayer(layer => { map.removeLayer(layer) })
-			layerGroup.eachLayer(layer => { map.addLayer(layer) })
-		}
+		})
+		layerGroup.eachLayer(layer => { map.addLayer(layer) })
 	}
 
 	return campaignVisualizeButton
+}
+function showAllCampaignsButton(allGroups, map) {
+	const campaignsVisualizeButton = document.createElement("button")
+
+	campaignsVisualizeButton.innerText = "show all campaigns in map"
+	campaignsVisualizeButton.onclick = () => {
+		allGroups.eachLayer( group=>{
+			group.eachLayer(layer => { map.addLayer(layer) })
+		})
+	}
+	return campaignsVisualizeButton
 }
 
 function showMissionButton(mission, layerGroup, allGroups, map) {
@@ -122,9 +133,9 @@ function showMissionButton(mission, layerGroup, allGroups, map) {
 	const polygon = L.polygon([...mission.area], { color: `#${randomColor}` })
 	layerGroup.addLayer(polygon)
 	missionVisualizeButton.onclick = () => {
-		for (let group of allGroups){
+		allGroups.eachLayer( group=>{
 			group.eachLayer(layer => { map.removeLayer(layer) })
-		}
+		})
 		map.addLayer(polygon)
 	}
 
