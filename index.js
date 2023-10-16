@@ -2,7 +2,7 @@ const campaings = [
 	{
 		name: "campaignName", description: "campaignDescription",
 		missions: [
-			{ name: "missionName", completed: false, area: [[51.509, -0.08], [51.503, -0.06], [51.51, -0.047]] },
+			{ name: "missionName", completed: true, area: [[51.509, -0.08], [51.503, -0.06], [51.51, -0.047]] },
 			{ name: "missionName2", completed: false, area: [[51.519, -0.08], [51.513, -0.06], [51.52, -0.047]] }
 		]
 	},
@@ -12,16 +12,25 @@ const campaings = [
 			{ name: "missionName2", completed: false, area: [[51.509, -0.18], [51.503, -0.16], [51.51, -0.147]] },
 			{ name: "missionName22", completed: false, area: [[51.519, -0.18], [51.513, -0.16], [51.52, -0.147]] }
 		]
+	},
+	{
+		name: "campaignName3", description: "campaignDescription",
+		missions: [
+			{ name: "missionName2", completed: false, area: [[51.509, -0.13], [51.503, -0.11], [51.51, -0.142]] },
+			{ name: "missionName22", completed: true, area: [[51.519, -0.13], [51.513, -0.11], [51.52, -0.142]] }
+		]
 	}
 ]
 
 window.onload = () => {
 	const map = initMap()
 	const campaingsContent = document.getElementById('campaigns-content')
-	map.whenReady(() => {
-		initCampaignsSection(campaingsContent, map, campaings)
-	})
 	const mapperContnent = document.getElementById('mapper-content')
+	map.whenReady(() => {
+		const allGroups = L.layerGroup().addTo(map)
+		initCampaignsSection(campaingsContent, map, allGroups, campaings)
+		initMapperSection(mapperContnent, map, allGroups, campaings)
+	})
 }
 
 function initMap() {
@@ -41,19 +50,39 @@ function initMap() {
 	return map
 }
 
-function initCampaignsSection(element, map, campaingsData) {
-	const campaignsBox = document.createElement("ul")
+function initMapperSection(element, map, allGroups, campaingsData) {
+	const mapperBox = document.createElement("ul")
 
-	const campaignLayers = L.layerGroup().addTo(map)
-	for (const campaign of campaingsData) {
-		const campaignLayer = L.layerGroup().addTo(campaignLayers)
-		campaignsBox.appendChild(campaignContainer(campaign, campaignLayer, campaignLayers, map))
+	const completedMissionLayer = L.layerGroup().addTo(allGroups)
+	const completedMissions = campaingsData.map(campaingn => campaingn.missions).flat(1).filter(mission=> mission.completed)
+		console.log(completedMissions)
+	for (const completedMission of completedMissions) {
+		console.log("enter")
+		const completedMissionItem = document.createElement("li")
+		let completedMissionInfo = document.createElement("div")
+		completedMissionInfo.innerHTML = `mission: ${completedMission.name}`
+		const polygon = randomColorPolygon(completedMission.area)		
+		completedMissionLayer.addLayer(polygon)
+		map.removeLayer(polygon)
+		completedMissionItem.appendChild(completedMissionInfo)
+		mapperBox.appendChild(completedMissionItem)
 	}
 
-	element.appendChild(showAllCampaignsButton(campaignLayers, map))
+	element.appendChild(showAllCompletedMissionsButton(completedMissionLayer, allGroups, map))
+	element.appendChild(mapperBox)
+}
+
+function initCampaignsSection(element, map, allGroups, campaingsData) {
+	const campaignsBox = document.createElement("ul")
+
+	for (const campaign of campaingsData) {
+		const campaignLayer = L.layerGroup().addTo(allGroups)
+		campaignsBox.appendChild(campaignContainer(campaign, campaignLayer, allGroups, map))
+	}
+
+	element.appendChild(showAllCampaignsButton(allGroups, map))
 	element.appendChild(campaignsBox)
 
-	return campaignLayers
 }
 
 function campaignContainer({ name, description, missions }, layerGroup, allGroups, map) {
@@ -129,8 +158,7 @@ function showMissionButton(mission, layerGroup, allGroups, map) {
 
 	missionVisualizeButton.innerText = "show in map"
 
-	const randomColor = Math.floor(Math.random() * 16777215).toString(16)
-	const polygon = L.polygon([...mission.area], { color: `#${randomColor}` })
+  const polygon = randomColorPolygon(mission.area)	
 	layerGroup.addLayer(polygon)
 	missionVisualizeButton.onclick = () => {
 		allGroups.eachLayer( group=>{
@@ -140,5 +168,25 @@ function showMissionButton(mission, layerGroup, allGroups, map) {
 	}
 
 	return missionVisualizeButton
+}
+
+function showAllCompletedMissionsButton(completedMissionLayer, allGroups, map){
+	const completeMissionsVisualizeButton = document.createElement("button")
+
+	completeMissionsVisualizeButton.innerText = "show all completed missions in map"
+	completeMissionsVisualizeButton.onclick = () => {
+		allGroups.eachLayer( group=>{
+			group.eachLayer(layer => { map.removeLayer(layer) })
+		})
+		completedMissionLayer.eachLayer(layer => { map.addLayer(layer) })
+	}
+	return completeMissionsVisualizeButton
+	 
+}
+
+function randomColorPolygon(area) {
+	const randomColor = Math.floor(Math.random() * 16777215).toString(16)
+	const polygon = L.polygon([...area], { color: `#${randomColor}` })
+	return polygon
 }
 
