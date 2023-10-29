@@ -55,11 +55,10 @@ function initMapperSection(element, map, allGroups, campaingsData) {
 
 	const completedMissionLayer = L.layerGroup().addTo(allGroups)
 	const completedMissions = campaingsData.map(campaingn => campaingn.missions).flat(1).filter(mission=> mission.completed)
-		console.log(completedMissions)
 	for (const completedMission of completedMissions) {
-		console.log("enter")
 		const completedMissionItem = document.createElement("li")
 		let completedMissionInfo = document.createElement("div")
+
 		completedMissionInfo.innerHTML = `mission: ${completedMission.name}`
 		const polygon = randomColorPolygon(completedMission.area)		
 		completedMissionLayer.addLayer(polygon)
