@@ -73,6 +73,7 @@ function initMapperSection(element, map, allGroups, campaingsData) {
 
 function initCampaignsSection(element, map, allGroups, campaingsData) {
 	const campaignsBox = document.createElement("ul")
+	campaignsBox.className = "campaigns-box"
 
 	for (const campaign of campaingsData) {
 		const campaignLayer = L.layerGroup().addTo(allGroups)
