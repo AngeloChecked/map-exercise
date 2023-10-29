@@ -9,3 +9,7 @@ resouces used:
 ## Get Started
 
 - run `node server.js` and navigate to `localhost:4000` 
+
+## Demo
+
+- you can find a preview here: https://angelochecked.github.io/map-exercise/
